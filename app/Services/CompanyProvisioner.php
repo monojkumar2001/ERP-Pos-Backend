@@ -43,7 +43,9 @@ class CompanyProvisioner
                 'company_id' => $company->id,
                 'is_owner' => true,
                 'role_id' => 1,
-                'email_verified_at' => now(),
+                'email_verified_at' => null,
+                'verification_code' => $data['verification_code'] ?? null,
+                'verification_code_expires_at' => $data['verification_code_expires_at'] ?? null,
                 'country' => $data['country'] ?? null,
             ]);
 

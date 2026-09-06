@@ -22,7 +22,6 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     protected $fillable = [
         'name',
         'password',
-        'verification_code',
         'email',
         'address',
         'phone',
@@ -36,6 +35,10 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'company_id',
         'is_owner',
         'email_verified_at',
+        'verification_code',
+        'verification_code_expires_at',
+        'password_reset_code',
+        'password_reset_expires_at',
         'status',
     ];
     /**
@@ -47,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'password',
         'remember_token',
         'verification_code',
+        'password_reset_code',
     ];
 
     /**
@@ -56,6 +60,8 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'verification_code_expires_at' => 'datetime',
+        'password_reset_expires_at' => 'datetime',
         'is_owner' => 'boolean',
         'status' => 'boolean',
     ];
