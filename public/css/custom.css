@@ -1,0 +1,42 @@
+.login-btn {
+    font-size: 18px;
+    border: none;
+    outline: none;
+    color: #fff;
+    background: none;
+}
+
+   /* TinyMCE Button Background Color Fix */
+   .tox .tox-tbtn--bespoke {
+    background-color: transparent !important;
+}
+/* TinyMCE Editor Content Text Color */
+.tox .tox-edit-area__iframe,
+.tox .tox-edit-area iframe {
+    background-color: #1e293b !important;
+}
+#tinymceContentEn_ifr,
+#mce-content-body {
+    color: #fff !important;
+}
+.tox .tox-edit-area__iframe body,
+.tox .tox-edit-area iframe body {
+    color: #fff !important;
+    background-color: #1e293b !important;
+}
+.tox .tox-tbtn:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+.tox .tox-tbtn--enabled {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+.tox .tox-tbtn--active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+/* Font size dropdown background */
+.tox .tox-menu {
+    background-color: #1e293b !important;
+}
+.tox .tox-menu__item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
