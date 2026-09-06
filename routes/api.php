@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\Api\UserController;
 
 // Public auth
@@ -18,4 +19,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/update/user', [UserController::class, 'updateUser']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::prefix('accounting')->group(function () {
+        Route::get('/dashboard', [AccountingController::class, 'dashboard']);
+        Route::get('/accounts', [AccountingController::class, 'accounts']);
+        Route::get('/journals', [AccountingController::class, 'journals']);
+        Route::get('/expenses', [AccountingController::class, 'expenses']);
+        Route::get('/incomes', [AccountingController::class, 'incomes']);
+        Route::get('/transfers', [AccountingController::class, 'transfers']);
+        Route::get('/recurring-journals', [AccountingController::class, 'recurringJournals']);
+    });
 });

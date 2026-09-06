@@ -17,10 +17,12 @@ class Account extends Model
         'name',
         'description',
         'status',
+        'balance',
     ];
 
     protected $casts = [
         'status' => 'boolean',
+        'balance' => 'decimal:2',
     ];
 
     public function company()

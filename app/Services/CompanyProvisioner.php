@@ -56,6 +56,11 @@ class CompanyProvisioner
             $this->seedOutlet($company, $warehouse);
             $this->seedChartOfAccounts($company);
 
+            // Demo accounting chart + sample transactions
+            $demo = new \Database\Seeders\AccountingDemoSeeder();
+            $demo->seedExpandedChart($company);
+            $demo->seedTransactions($company);
+
             return compact('company', 'user');
         });
     }
