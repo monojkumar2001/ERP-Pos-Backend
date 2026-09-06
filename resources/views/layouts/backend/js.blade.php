@@ -16,7 +16,7 @@
   <script src="{{ asset('assets/js/data-table.js') }}"></script>
 
   <!-- Custom js for this page -->
-  <script src="{{ asset('assets/js/dashboard-dark.js') }}"></script>
+  <script src="{{ asset('assets/js/dashboard-light.js') }}"></script>
   <!-- End custom js for this page -->
   {{-- <script src="{{ asset('assets/js/form-validation.js') }}"></script> --}}
   <script src="{{ asset('assets/vendors/easymde/easymde.min.js') }}"></script>
@@ -27,7 +27,7 @@
 
   <script src="{{ asset('assets/js/select2.js') }}"></script>
 
-    <script src="{{ asset('assets/js/apexcharts-dark.js') }}"></script>
+    <script src="{{ asset('assets/js/apexcharts-light.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 
   <script>

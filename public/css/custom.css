@@ -6,37 +6,43 @@
     background: none;
 }
 
-   /* TinyMCE Button Background Color Fix */
-   .tox .tox-tbtn--bespoke {
+/* TinyMCE light theme tweaks */
+.tox .tox-tbtn--bespoke {
     background-color: transparent !important;
 }
-/* TinyMCE Editor Content Text Color */
+
 .tox .tox-edit-area__iframe,
 .tox .tox-edit-area iframe {
-    background-color: #1e293b !important;
+    background-color: #ffffff !important;
 }
+
 #tinymceContentEn_ifr,
 #mce-content-body {
-    color: #fff !important;
+    color: #0f172a !important;
 }
+
 .tox .tox-edit-area__iframe body,
 .tox .tox-edit-area iframe body {
-    color: #fff !important;
-    background-color: #1e293b !important;
+    color: #0f172a !important;
+    background-color: #ffffff !important;
 }
+
 .tox .tox-tbtn:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(15, 23, 42, 0.06) !important;
 }
+
 .tox .tox-tbtn--enabled {
-    background-color: rgba(255, 255, 255, 0.15) !important;
+    background-color: rgba(15, 23, 42, 0.08) !important;
 }
+
 .tox .tox-tbtn--active {
-    background-color: rgba(255, 255, 255, 0.2) !important;
+    background-color: rgba(15, 23, 42, 0.12) !important;
 }
-/* Font size dropdown background */
+
 .tox .tox-menu {
-    background-color: #1e293b !important;
+    background-color: #ffffff !important;
 }
+
 .tox .tox-menu__item:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(15, 23, 42, 0.06) !important;
 }

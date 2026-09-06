@@ -15,7 +15,7 @@
 <!-- endinject -->
 
 <!-- Layout styles -->
-<link rel="stylesheet" href="{{ asset('assets/css/demo2/style.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/demo1/style.css') }}">
 <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 <!-- End layout styles -->
 

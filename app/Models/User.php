@@ -28,10 +28,15 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'phone',
         'about',
         'city',
-        'Region',
+        'region',
         'country',
         'ip',
         'image',
+        'role_id',
+        'company_id',
+        'is_owner',
+        'email_verified_at',
+        'status',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -41,6 +46,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'verification_code',
     ];
 
     /**
@@ -50,12 +56,19 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_owner' => 'boolean',
+        'status' => 'boolean',
     ];
 
 
     public function role()
     {
-        return $this->belongsTo('App\Models\Role');
+        return $this->belongsTo(Role::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

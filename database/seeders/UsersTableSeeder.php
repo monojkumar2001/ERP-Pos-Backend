@@ -20,16 +20,16 @@ class UsersTableSeeder extends Seeder
             'name' => 'Super Admin',
             'country' => 'Bangladesh',
             'phone' => '01792892198',
-            'email' => 'helal@admin.com',
-            'password' => bcrypt('helaluddin'),
+            'email' => 'monoj@admin.com',
+            'password' => bcrypt('monojkumar'),
         ]);
         DB::table('users')->insert([
             'role_id' => '2',
             'name' => 'user',
             'country' => 'Bangladesh',
             'phone' => '01792892198',
-            'email' => 'helal@user.com',
-            'password' => bcrypt('helaluddin'),
+            'email' => 'monoj@user.com',
+            'password' => bcrypt('monojkumar'),
         ]);
         DB::table('users')->insert([
             'role_id' => '3',
@@ -37,15 +37,15 @@ class UsersTableSeeder extends Seeder
             'country' => 'Bangladesh',
             'phone' => '01792892198',
             'email' => 'admin@admin.com',
-            'password' => bcrypt('helaluddin'),
+            'password' => bcrypt('monojkumar'),
         ]);
         DB::table('users')->insert([
             'role_id' => '4',
             'name' => 'Block User',
             'country' => 'Bangladesh',
             'phone' => '01792892198',
-            'email' => 'helal@block.com',
-            'password' => bcrypt('helaluddin'),
+            'email' => 'monoj@block.com',
+            'password' => bcrypt('monojkumar'),
         ]);
     }
 }

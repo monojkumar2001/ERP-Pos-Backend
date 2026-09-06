@@ -14,7 +14,7 @@
                                 <div class="col-md-12 ps-md-0">
                                     <div class="auth-form-wrapper px-4 py-5">
                                         <a href="#"
-                                            class="noble-ui-logo logo-light d-block mb-2 text-center">Login to <span>Admin Panel</span></a>
+                                            class="noble-ui-logo d-block mb-2 text-center">Login to <span>Admin Panel</span></a>
                                         <h5 class="text-muted fw-normal mb-4 text-center">Welcome back! Log in to your account.</h5>
                                         <form class="forms-sample"method="POST" action="{{ route('login') }}">
                                             @csrf
