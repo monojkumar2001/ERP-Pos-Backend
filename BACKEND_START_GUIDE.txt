@@ -1,0 +1,125 @@
+ERP-Pos Backend — Step by Step Start Guide
+==========================================
+Order: foundation → ACL → master data → transactions
+Do NOT start Sales/POS/Payroll first.
+
+
+Phase 0 — Setup (1 day)
+-----------------------
+1. Backend .env set (DB, APP_URL, Sanctum/CORS)
+2. composer install
+3. php artisan migrate
+4. php artisan db:seed
+5. php artisan serve  (default :8000)
+6. Frontend: NEXT_PUBLIC_API_URL=http://localhost:8000/api confirm
+7. Test: register / login / me / logout (Postman or Thunder Client)
+
+
+Phase 1 — Core foundation (first real work)
+-------------------------------------------
+8. Company scoping harden — every query filter by company_id (middleware/trait)
+9. Auth polish — token, verify email, forgot/reset; wire with Frontend login
+10. Standard API response shape (data, message, meta/pagination)
+11. One shared error + validation response policy
+
+
+Phase 2 — ACL (recommended next module; UI already ready)
+---------------------------------------------------------
+12. Expand roles table: redirect_url, description, company_id
+13. permissions table + role_permission pivot
+14. User–role assignment (user_roles / invite flow)
+15. APIs:
+    - GET/POST     /acl/roles
+    - GET/PUT/DELETE /acl/roles/{id}
+    - POST         /acl/roles/{id}/clone
+    - GET/POST     /acl/users (invite)
+    - user status toggle (Make Active / Make Inactive)
+    - role-details / user-details endpoints
+16. Permission middleware (example: can:items.view)
+17. Frontend ACL pages: mock data → real API
+
+
+Phase 3 — Master data (before transactions)
+-------------------------------------------
+18. Items (brand, category, manufacturer, color, size, attribute)
+19. Customers + customer types
+20. Suppliers + supplier types
+21. Warehouses / outlets (tables partially exist)
+22. Chart of Accounts CRUD (list partially live)
+
+
+Phase 4 — Inventory
+-------------------
+23. Item stock / opening stock
+24. Stock adjustment
+25. Warehouse transfer + receive
+
+
+Phase 5 — Sales + Purchase
+--------------------------
+26. Direct Invoice / Sales Order / Delivery / Invoice / Payment
+27. Direct Bill / Purchase Order / Receipt / Bill / Payment
+28. Same transaction: stock update + ledger (double-entry)
+
+
+Phase 6 — POS
+-------------
+29. Outlet / counter / check-in / session
+30. POS order + return (stock deduct)
+
+
+Phase 7 — Rest
+--------------
+31. HRM
+32. Support tickets
+33. Reports
+34. Settings (email / SMS templates)
+
+
+What to start with RIGHT NOW
+----------------------------
+Option A (recommended):
+  Phase 0 + Phase 1 complete → then ACL
+  Reason: Role/User UI already exists; backend makes Frontend useful immediately.
+
+Option B:
+  Auth + company scoping solid → then Items / Customers
+  (needed before Sales)
+
+
+Avoid starting first
+--------------------
+- Sales
+- POS
+- Payroll
+Without master data + ACL these become fragile.
+
+
+Daily pattern (every module)
+----------------------------
+1. Migration → Model → Seeder
+2. Form Request (validation)
+3. Controller + routes (auth:sanctum + company scope)
+4. Postman / Thunder Client test
+5. Frontend api.js + list/details wire
+
+
+Current backend status (snapshot)
+---------------------------------
+- Auth: register/login/verify/forgot mostly done
+- Company multi-tenant foundation exists
+- Accounting: read APIs partially done
+- Roles table: basic / ACL incomplete
+- Frontend: mostly mock UI for most modules
+
+
+Quick commands
+--------------
+cd Backend
+composer install
+php artisan migrate
+php artisan db:seed
+php artisan serve
+
+API base: http://localhost:8000/api
+Frontend: http://localhost:3000
