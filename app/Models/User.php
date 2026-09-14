@@ -77,6 +77,13 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         return $this->belongsTo(Company::class);
     }
 
+    public function aclRoles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user')
+            ->withPivot(['company_id', 'status', 'effective_from'])
+            ->withTimestamps();
+    }
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

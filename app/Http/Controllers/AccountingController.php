@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\BelongsToCompany;
 use App\Models\Account;
 use App\Models\Expense;
 use App\Models\Income;
@@ -9,27 +10,12 @@ use App\Models\Journal;
 use App\Models\MoneyTransfer;
 use App\Models\RecurringJournal;
 use Carbon\Carbon;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AccountingController extends Controller
 {
-    protected function companyId(Request $request): ?int
-    {
-        return $request->user()?->company_id;
-    }
-
-    protected function requireCompany(Request $request): int
-    {
-        $companyId = $this->companyId($request);
-        if (!$companyId) {
-            throw new HttpResponseException(
-                response()->json(['message' => 'No company linked to this user.'], 422)
-            );
-        }
-        return (int) $companyId;
-    }
+    use BelongsToCompany;
 
     protected function money($amount): string
     {

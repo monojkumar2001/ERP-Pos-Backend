@@ -1,125 +1,622 @@
-ERP-Pos Backend — Step by Step Start Guide
-==========================================
-Order: foundation → ACL → master data → transactions
-Do NOT start Sales/POS/Payroll first.
+ERP-Pos Backend — Full Start Guide (from Frontend analysis)
+============================================================
+Source: Frontend nav.js, pageConfigs.js, settingsPanel.js, reports.js,
+        ListPage actions, ModulePage specials, api.js
+Backend root: Backend/
+Frontend root: Frontend/
+
+Status tags:
+  [DONE]     = already wired API exists
+  [PARTIAL]  = tables and/or read API exist; writes/actions still missing
+  [TODO]     = not built yet (Frontend is mock/seed UI)
+
+Build order (do not skip ahead into Sales/POS/Payroll first):
+  foundation → ACL → master data → settings masters → accounting write
+  → inventory → sales → purchase → POS → manufacturing → HRM → support → reports
+
+Daily pattern (every resource):
+  1. Migration → Model → Seeder
+  2. Form Request (validation)
+  3. Controller + routes (auth:sanctum + company_id scope)
+  4. Postman / Thunder Client test
+  5. Frontend api.js client + list/form/details wire
+
+Shared list API contract (assume for every list resource unless noted):
+  GET    collection   paginated + filters + search + sort
+  POST   collection   create
+  GET    /{id}        details
+  PUT/PATCH /{id}     update
+  DELETE /{id}        delete
+  PATCH  status       Active/Inactive, Approve, Cancel, Close, Draft, etc.
+  Extra actions listed per module below
 
 
-Phase 0 — Setup (1 day)
------------------------
-1. Backend .env set (DB, APP_URL, Sanctum/CORS)
-2. composer install
-3. php artisan migrate
-4. php artisan db:seed
-5. php artisan serve  (default :8000)
-6. Frontend: NEXT_PUBLIC_API_URL=http://localhost:8000/api confirm
-7. Test: register / login / me / logout (Postman or Thunder Client)
+==============================================================================
+PHASE 0 — Setup
+==============================================================================
+1.  [DONE] Backend .env (DB=ERP_POS, APP_URL, FRONTEND_URL, Sanctum, CORS)
+2.  [DONE] composer install  (vendor/ present)
+3.  [DONE] php artisan migrate  (all migrations Ran)
+4.  [DONE] php artisan db:seed
+5.  [DONE] php artisan serve (:8000) — currently http://127.0.0.1:8000
+       Restart anytime: cd Backend && php artisan serve
+6.  [DONE] Frontend NEXT_PUBLIC_API_URL=http://localhost:8000/api
+7.  [DONE] Smoke test auth: register / login / me / logout
+       (Auth API routes exist; re-test anytime after serve is up)
 
 
-Phase 1 — Core foundation (first real work)
--------------------------------------------
-8. Company scoping harden — every query filter by company_id (middleware/trait)
-9. Auth polish — token, verify email, forgot/reset; wire with Frontend login
-10. Standard API response shape (data, message, meta/pagination)
-11. One shared error + validation response policy
+==============================================================================
+PHASE 1 — Core foundation
+==============================================================================
+Frontend routes:
+  /en/account/register
+  /en/account/login
+  /en/account/verify
+  /en/account/forgot-password
+  /en/dashboard
+  /en/subscriptions
+
+Auth APIs (Frontend/src/lib/api.js) — mostly done:
+8.  [DONE] POST /api/register
+9.  [DONE] POST /api/login
+10. [DONE] POST /api/auth/verify
+11. [DONE] POST /api/auth/resend-verification
+12. [DONE] POST /api/auth/forgot-password
+13. [DONE] POST /api/auth/reset-password
+14. [DONE] GET  /api/me  (+ /api/user)
+15. [DONE] POST /api/logout
+16. [DONE] POST /api/update/user  (unique email, region fix, returns user payload)
+
+Company / multi-tenant:
+17. [DONE] companies + users.company_id + CompanyProvisioner on register
+18. [DONE] Company-scope middleware/trait
+       - Middleware: EnsureCompany (alias: company)
+       - Trait: BelongsToCompany (requireCompany)
+19. [DONE] Standard JSON response shape via App\Support\ApiResponse
+       { message, data, meta? }
+20. [DONE] Shared validation/error format via ApiResponse::error / ::validation
+21. [DONE] Business dashboard KPIs API  GET /api/dashboard → /en/dashboard
+       (Frontend DashboardHome wired; live-aligned company-scoped snapshot)
+22. [DONE] Subscriptions / plans API    GET /api/subscriptions → /en/subscriptions
 
 
-Phase 2 — ACL (recommended next module; UI already ready)
----------------------------------------------------------
-12. Expand roles table: redirect_url, description, company_id
-13. permissions table + role_permission pivot
-14. User–role assignment (user_roles / invite flow)
-15. APIs:
-    - GET/POST     /acl/roles
-    - GET/PUT/DELETE /acl/roles/{id}
-    - POST         /acl/roles/{id}/clone
-    - GET/POST     /acl/users (invite)
-    - user status toggle (Make Active / Make Inactive)
-    - role-details / user-details endpoints
-16. Permission middleware (example: can:items.view)
-17. Frontend ACL pages: mock data → real API
+==============================================================================
+PHASE 2 — ACL (recommended first product module; UI already ready)
+==============================================================================
+Frontend routes:
+  /en/acl/role/index
+  /en/acl/role/create
+  /en/acl/role/role-details/{id}
+  /en/acl/user/index
+  /en/acl/user/invite
+  /en/acl/user/user-details/{id}
+
+Schema:
+23. [DONE] roles expanded: company_id, name, redirect_url, description, is_system
+24. [DONE] permissions table (module.action keys)
+25. [DONE] permission_role pivot
+26. [DONE] role_user pivot (multi-role + company_id)
+27. [PARTIAL] assignment effective_from + status on role_user
+      (invite email tokens not built yet)
+
+Role APIs + UI actions:
+28. [DONE] GET/POST /api/acl/roles — Create Role UI wired
+29. [DONE] GET/PUT/DELETE /api/acl/roles/{id}
+         Delete disabled for Administrator / is_system
+30. [DONE] POST /api/acl/roles/{id}/clone — UI ⋮ Clone
+31. [DONE] GET /api/acl/roles/{id} details + assigned users
+32. [DONE] POST /api/acl/roles/{id}/invite-user
+33. [DONE] Permission matrix save on create (AclRoleFormPage)
+
+User APIs + UI actions:
+34. [DONE] GET /api/acl/users — EMAIL / STATUS list
+35. [DONE] POST /api/acl/users/invite — AclUserInvitePage
+36. [DONE] PATCH /api/acl/users/{id}/status — Make Inactive/Active
+37. [DONE] GET /api/acl/users/{id} — user-details
+38. [PARTIAL] permission middleware alias registered (`permission`)
+      — not yet applied to product module routes
+39. [DONE] Frontend ACL pages wired to real API
+         (/acl/roles, /acl/users, create/details/invite)
 
 
-Phase 3 — Master data (before transactions)
--------------------------------------------
-18. Items (brand, category, manufacturer, color, size, attribute)
-19. Customers + customer types
-20. Suppliers + supplier types
-21. Warehouses / outlets (tables partially exist)
-22. Chart of Accounts CRUD (list partially live)
+==============================================================================
+PHASE 3 — Master data (before transactions)
+==============================================================================
+
+----- 3A. Items -----
+Frontend:
+  /en/item-config/item-categories
+  /en/item-config/items
+  /en/item-config/add-item
+  /en/item-config/item-details/{id}
+  /en/item-config/manufacturers
+  /en/item-config/brands
+  /en/item-config/price-list
+  /en/item-config/price-list-create
+  /en/item-config/price-list-update/{id}
+  /en/item-config/price-list-details/{id}
+  /en/item-config/colors
+  /en/item-config/item-sizes
+  /en/item-config/item-attributes
+  /en/item-config/uom-conversions
+
+40. [TODO] Categories tree CRUD (+ parent, position, search)
+41. [TODO] Items CRUD + details
+         UI ⋮: Details, Edit, Inactive, Delete, Edit Opening Stock
+42. [TODO] Add Single Item form API (full item payload)
+43. [TODO] Opening stock edit API
+44. [TODO] Manufacturers CRUD (modal)
+         UI ⋮: Edit, Inactive, Add Discount, Remove Discount, Delete
+45. [TODO] Brands CRUD (modal) — same actions as manufacturers
+46. [TODO] Colors CRUD (modal)
+47. [TODO] Size types + nested sizes CRUD (modal)
+48. [TODO] Attribute sets + nested attributes CRUD (modal)
+49. [TODO] Price lists CRUD + details + deactivate
+50. [TODO] UoM conversions CRUD
+
+----- 3B. Customers -----
+Frontend:
+  /en/sales/customer-types
+  /en/sales/customers
+  /en/sales/customer-create
+  /en/sales/customer-update/{id}
+  /en/sales/customer-details/{id}
+
+51. [TODO] Customer types CRUD (Edit, Inactive)
+52. [TODO] Customers CRUD + details
+         fields: address, opening balance, as-supplier, price list, credit limit
+         UI ⋮: Details, Edit, Inactive
+
+----- 3C. Suppliers -----
+Frontend:
+  /en/purchase/supplier-types
+  /en/purchase/suppliers
+  /en/purchase/supplier-create
+  /en/purchase/supplier-details/{id}   (details href wired; ensure API)
+
+53. [TODO] Supplier types CRUD (Edit, Inactive)
+54. [TODO] Suppliers CRUD + details (contact/address)
+         UI ⋮: Details, Edit, Inactive
+
+----- 3D. Locations / outlets shell -----
+Frontend:
+  /en/inventory/warehouses
+  /en/inventory/warehouse-create
+  /en/inventory/bin-locations
+  /en/pos/outlets
+  /en/pos/outlet-create
+  /en/pos/outlet-update/{id}
+
+55. [PARTIAL] warehouses table + provision default — add CRUD + details APIs
+56. [TODO] Bin locations CRUD
+57. [PARTIAL] pos_outlets table + provision default — add CRUD
+         UI: warehouse, cash, mobile banking fields; Edit, Inactive
 
 
-Phase 4 — Inventory
--------------------
-23. Item stock / opening stock
-24. Stock adjustment
-25. Warehouse transfer + receive
+==============================================================================
+PHASE 4 — Config / Settings masters (before heavy transactions)
+==============================================================================
+Frontend settings drawer + sidebar Email/SMS:
+  /en/tax/tax-list, /en/tax/tax-create
+  /en/discount/discount-list, /en/discount/discount-create
+  /en/settings/payment-methods, /en/settings/payment-method-create
+  /en/settings/accounting-settings
+  /en/sales/sales-settings
+  /en/settings/purchase-setting
+  /en/settings/customer-setting
+  /en/settings/template-settings
+  /en/settings/delivery-channels
+  /en/settings/delivery-charges
+  /en/inventory/adjustment-reasons, /en/inventory/adjustment-reason-create
+  /en/settings/pos-settings
+  /en/settings/hr-payroll-settings
+  /en/settings/custom-fields, /en/settings/custom-field-create
+  /en/settings/advanced-settings
+  /en/settings/email-templates, /en/settings/email-setting
+  /en/sms/sms-templates, /en/sms/sms-settings
+
+58. [PARTIAL] company_settings key/value table — expose GET/PUT API
+59. [TODO] VAT / Tax CRUD (/en/tax/…)
+60. [TODO] Discounts CRUD (+ Change Effective Date)
+61. [TODO] Payment methods CRUD (Edit, Inactive, Delete)
+62. [TODO] Delivery channels CRUD
+63. [TODO] Delivery charges CRUD + Generate
+64. [TODO] Adjustment reasons CRUD (Edit, Inactive)
+65. [TODO] Custom fields CRUD (Edit, Inactive, Delete)
+66. [TODO] Advanced settings (decimal digit limit) Save
+67. [TODO] Accounting settings tabs Save (journal/expense/income/transfer prefs)
+68. [TODO] Sales settings tabs Save (quotation/order/delivery/invoice/payment/return)
+69. [TODO] Purchase settings tabs Save (requisition/order/receipt/bill/payment)
+70. [TODO] Customer settings Save (phone/email/code/credit limit prefs)
+71. [TODO] Template / print settings Save
+72. [TODO] POS settings Save (refund, barcode, walk-in, return days, printer)
+73. [TODO] HR/Payroll settings tabs Save (employee/payslip/attendance ZKTeco)
+74. [TODO] Email templates CRUD (Edit, Inactive, Delete)
+75. [TODO] Email configuration Save
+76. [TODO] SMS templates CRUD
+77. [TODO] SMS configuration Save
 
 
-Phase 5 — Sales + Purchase
---------------------------
-26. Direct Invoice / Sales Order / Delivery / Invoice / Payment
-27. Direct Bill / Purchase Order / Receipt / Bill / Payment
-28. Same transaction: stock update + ledger (double-entry)
+==============================================================================
+PHASE 5 — Accounting (write path; reads already partial)
+==============================================================================
+Frontend:
+  /en/accounting/dashboard
+  /en/accounting/accounts
+  /en/accounting/journals
+  /en/accounting/expenses
+  /en/accounting/incomes
+  /en/accounting/transfer-money
+  /en/accounting/recurring-journal
+
+78. [DONE] GET /api/accounting/dashboard
+79. [DONE] GET /api/accounting/accounts
+80. [DONE] GET /api/accounting/journals
+81. [DONE] GET /api/accounting/expenses
+82. [DONE] GET /api/accounting/incomes
+83. [DONE] GET /api/accounting/transfers
+84. [DONE] GET /api/accounting/recurring-journals
+85. [TODO] Chart of Accounts create / update / delete / tree reorder
+86. [TODO] Journals CRUD + lines (double-entry) + Approve/Draft + details
+87. [TODO] Expenses CRUD + Approve/Draft + details
+88. [TODO] Incomes CRUD + Approve/Draft + details
+89. [TODO] Internal transfers CRUD + details
+90. [TODO] Recurring journals CRUD + run/schedule
 
 
-Phase 6 — POS
--------------
-29. Outlet / counter / check-in / session
-30. POS order + return (stock deduct)
+==============================================================================
+PHASE 6 — Inventory transactions
+==============================================================================
+Frontend:
+  /en/inventory/item-stock
+  /en/inventory/stock-adjustments
+  /en/inventory/add-stock-adjustment
+  /en/inventory/stock-adjustment-details/{id}
+  /en/inventory/warehouse-transfer-list
+  /en/inventory/warehouse-transfer
+  /en/inventory/warehouse-transfer-request-create
+  /en/inventory/warehouse-transfer-initiate/{id}
+  /en/inventory/warehouse-transfer-details/{id}
+  /en/inventory/receive-stock
+  /en/inventory/receive-stock-create/{id}
+  /en/inventory/warehouse-access
+
+91. [TODO] Item stock summary list (+ link to item details)
+92. [TODO] Stock adjustments CRUD + Cancel + details
+93. [TODO] Warehouse transfers:
+         create movement, create request, initiate, receive stock, details
+         UI ⋮: Details, Edit, Initiate, Receive Stock
+94. [TODO] Receivable stock list + receive-into-bin form
+95. [TODO] Warehouse access assign (user ↔ warehouse) Save / Delete row
 
 
-Phase 7 — Rest
---------------
-31. HRM
-32. Support tickets
-33. Reports
-34. Settings (email / SMS templates)
+==============================================================================
+PHASE 7 — Sales document chain
+==============================================================================
+Frontend lists / forms / details:
+  /en/sales/sales-direct-sales
+  /en/sales/sales-direct-sale-create
+  /en/sales/sales-direct-sale-details/{id}
+  /en/sales/quotation-list
+  /en/sales/quotation-create
+  /en/sales/quotation-details/{id}
+  /en/sales/sales-orders
+  /en/sales/sales-order-create
+  /en/sales/sales-order-details/{id}
+  /en/sales/sales-deliveries
+  /en/sales/sales-delivery-details/{id}
+  /en/sales/sales-invoices
+  /en/sales/sales-invoice-details/{id}
+  /en/sales/sales-returns
+  /en/sales/sales-return-details/{id}
+  /en/sales/batch-payments
+  /en/sales/batch-payment-details/{id}
+  /en/sales/sales-payments
+  /en/sales/sales-payment-details/{id}
+  /en/sales/customer-debits
+  /en/sales/customer-debit-create
+  /en/sales/customer-debit-details/{id}
+  /en/sales/refunds
+  /en/sales/refund-details/{id}
+
+For each document: list + create/update where UI has CTA + details + row actions.
+Same transaction must update stock (when applicable) + customer ledger + GL.
+
+96.  [TODO] Direct Invoice — Add; summary cards; ⋮ Details, Edit, Cancel
+97.  [TODO] Quotation — Add; ⋮ Details, Edit, Approve, Delete
+98.  [TODO] Sales Order — Add; ⋮ Details, Edit, Approve, Delete
+99.  [TODO] Delivery — no add CTA on list; ⋮ Details, Edit, Delete
+100. [TODO] All Invoices — no add CTA; ⋮ Details, Edit, Delete
+101. [TODO] Sales Return — no add CTA; ⋮ Details, Edit, Delete
+102. [TODO] Batch Payment — no add CTA; ⋮ Details, Delete
+103. [TODO] Sales Payment — no add CTA; ⋮ Details, Edit, Delete
+104. [TODO] Customer Debit — Add; ⋮ Details, Edit, Approve, Delete
+105. [TODO] Refund — no add CTA; ⋮ Details, Edit, Delete
+106. [TODO] Convert flows (quotation→order, order→delivery/invoice) as needed by UI
 
 
-What to start with RIGHT NOW
-----------------------------
-Option A (recommended):
-  Phase 0 + Phase 1 complete → then ACL
-  Reason: Role/User UI already exists; backend makes Frontend useful immediately.
+==============================================================================
+PHASE 8 — Purchase document chain
+==============================================================================
+Frontend:
+  /en/purchase/direct-purchases
+  /en/purchase/direct-purchase-create
+  /en/purchase/direct-purchase-details/{id}
+  /en/purchase/requisitions
+  /en/purchase/requisition-create
+  /en/purchase/requisition-details/{id}
+  /en/purchase/orders
+  /en/purchase/order-create
+  /en/purchase/order-details/{id}
+  /en/purchase/receipts
+  /en/purchase/receipt-details/{id}
+  /en/purchase/bills
+  /en/purchase/bill-details/{id}
+  /en/purchase/returns
+  /en/purchase/return-details/{id}
+  /en/purchase/batch-payments
+  /en/purchase/batch-payment-details/{id}
+  /en/purchase/payments
+  /en/purchase/payment-details/{id}
+  /en/purchase/supplier-credits
+  /en/purchase/supplier-credit-create
+  /en/purchase/supplier-credit-details/{id}
+  /en/purchase/refunds
+  /en/purchase/refund-details/{id}
 
-Option B:
-  Auth + company scoping solid → then Items / Customers
-  (needed before Sales)
+Same transaction: stock + supplier ledger + GL.
+
+107. [TODO] Direct Bill — Add; summary cards; ⋮ Details, Edit, Cancel
+108. [TODO] Requisition — Add; ⋮ Details, Edit, Approve, Delete
+109. [TODO] Purchase Order — Add; ⋮ Details, Edit, Approve, Delete
+110. [TODO] Receipt — list Details only (+ create from PO flow)
+111. [TODO] All Bills — list Details only
+112. [TODO] Purchase Return — list Details only
+113. [TODO] Purchase Batch Payment — list Details only
+114. [TODO] Purchase Payment — list Details only
+115. [TODO] Supplier Credit — Add; ⋮ Details, Edit, Delete
+116. [TODO] Purchase Refund — list Details only
 
 
-Avoid starting first
---------------------
-- Sales
-- POS
-- Payroll
-Without master data + ACL these become fragile.
+==============================================================================
+PHASE 9 — POS
+==============================================================================
+Frontend:
+  /en/pos/outlets                          (CRUD in Phase 3D)
+  /en/pos/outlet-create, outlet-update/{id}
+  /en/pos/posoutletcheckin
+  /en/pos-counter/index
+  /en/pos/poscountercheckin
+  /en/pos/outlet-sessions
+  /en/pos/counter-sessions
+  /en/pos/index
+  /en/pos/pos-returns
+  /en/pos/barcodegeneration
+  /en/pos/outlet-access
+
+117. [TODO] Outlet check-in / check-out
+118. [TODO] Counters CRUD
+119. [TODO] Counter check-in / check-out
+120. [TODO] Outlet sessions list + open/close
+121. [TODO] Counter sessions list + open/close
+122. [TODO] POS orders list + create/checkout (stock deduct + payment)
+123. [TODO] POS returns
+124. [TODO] Barcode generation
+125. [TODO] Outlet access assignment (user ↔ outlet)
 
 
-Daily pattern (every module)
-----------------------------
-1. Migration → Model → Seeder
-2. Form Request (validation)
-3. Controller + routes (auth:sanctum + company scope)
-4. Postman / Thunder Client test
-5. Frontend api.js + list/details wire
+==============================================================================
+PHASE 10 — Manufacturing
+==============================================================================
+Frontend:
+  /en/manufacturing/dashboard
+  /en/manufacturing/production-plans
+  /en/manufacturing/production-plan-create
+  /en/manufacturing/production-plan-update/{id}
+  /en/manufacturing/production-plan-details/{id}
+  /en/manufacturing/production-plan-templates
+  /en/manufacturing/production-plan-template-create
+  /en/manufacturing/production-plan-template-details/{id}
+  /en/manufacturing/pipelines
+  /en/manufacturing/item-pipeline/{id}
+  /en/manufacturing/finished-goods
+  /en/manufacturing/finished-goods-details/{id}
+  /en/manufacturing/waste-goods
+  /en/manufacturing/waste-goods-details/{id}
+  /en/manufacturing/manufacturing-settings
+
+126. [TODO] Manufacturing overview KPIs
+127. [TODO] Production plans CRUD + details
+         Save / Save as Draft / Save as Approved / Save as Template
+128. [TODO] Production plan templates CRUD + details
+129. [TODO] Pipelines list + item pipeline stage board (add/delete stages)
+130. [TODO] Finished goods list + details + transfer
+131. [TODO] Waste goods list + details + transfer
+132. [TODO] Manufacturing settings (teams CRUD, members, bin-card settings)
 
 
-Current backend status (snapshot)
----------------------------------
-- Auth: register/login/verify/forgot mostly done
-- Company multi-tenant foundation exists
-- Accounting: read APIs partially done
-- Roles table: basic / ACL incomplete
-- Frontend: mostly mock UI for most modules
+==============================================================================
+PHASE 11 — HRM
+==============================================================================
+Frontend:
+  /en/hrm/employee/employees
+  /en/hrm/employee/employee-create
+  /en/hrm/employee/employee-update/{id}
+  /en/hrm/employee/employee-details/{id}
+  /en/hrm/employee/working-shifts
+  /en/hrm/employee/rosters
+  /en/hrm/employee/job-titles
+  /en/hrm/employee/organizations
+  /en/hrm/employee/office-locations
+  /en/hrm/employee/employment-types
+  /en/hrm/attendance/ot-requests
+  /en/hrm/attendance/attendance-sheet
+  /en/hrm/payroll/payheads
+  /en/hrm/payroll/payrolls
+  /en/hrm/payroll/positions
+  /en/hrm/payroll/payslip-index
+  /en/hrm/payroll/salarysheet
+  /en/hrm/payroll/resign-rule-list
+  /en/hrm/payroll/resignations
+  /en/hrm/payroll/rejoin-list
+  /en/hrm/payroll/billingperiods
+  /en/hrm/leave/leave-types
+  /en/hrm/leave/assign-leave-type-list
+  /en/hrm/leave/leave-applications
+  /en/hrm/holiday/holidays
+
+Employee:
+133. [TODO] Employees CRUD + details
+         UI ⋮: Details, Edit, Inactive, Delete
+         Batch UI: Change Office Time, Assign Weekend
+134. [TODO] Working shifts CRUD
+135. [TODO] Rosters CRUD
+136. [TODO] Job titles CRUD
+137. [TODO] Departments (organizations) CRUD
+138. [TODO] Office locations CRUD
+139. [TODO] Employment types CRUD
+
+Attendance / Payroll / Leave:
+140. [TODO] OT requests CRUD + approve/reject
+141. [TODO] Attendance sheet (by date/dept; present/absent save)
+142. [TODO] Pay heads CRUD
+143. [TODO] Payroll definitions CRUD
+144. [TODO] Positions CRUD
+145. [TODO] Payslip manager
+146. [TODO] Salary sheet generate/view
+147. [TODO] Resign rules CRUD
+148. [TODO] Resignations CRUD
+149. [TODO] Rejoin CRUD
+150. [TODO] Billing periods CRUD
+151. [TODO] Leave types CRUD
+152. [TODO] Assign leave types CRUD
+153. [TODO] Leave applications + approve/reject
+154. [TODO] Holidays CRUD
 
 
-Quick commands
---------------
+==============================================================================
+PHASE 12 — Support & Ticketing
+==============================================================================
+Frontend:
+  /en/support-tickets
+  /en/support-tickets/create
+  /en/support-tickets/details/{id}
+
+155. [TODO] Tickets list (filters: category, status, date)
+156. [TODO] Create Support Ticket
+157. [TODO] Ticket details + reply/thread
+158. [TODO] Close ticket (UI ⋮: Details, Close)
+
+
+==============================================================================
+PHASE 13 — Reports hub (/en/reports/index)
+==============================================================================
+Each report needs: filter params + generate + export (PDF/Excel as UI expects).
+
+Sales (13):
+159. [TODO] Customer Sales Report
+160. [TODO] Customer Wise Item Sales
+161. [TODO] Item Wise Sales
+162. [TODO] Customer Ledger
+163. [TODO] Sales By Sales Person
+164. [TODO] Combined Customer-Supplier Ledger
+165. [TODO] User Wise Sales
+166. [TODO] Item Wise Customer Sales
+167. [TODO] Comparison On Delivery Charges
+168. [TODO] Invoice Wise Profit Report
+169. [TODO] Customer Aging Report
+170. [TODO] Item Wise Profit Report
+171. [TODO] Invoice Update History
+
+Purchases (4):
+172. [TODO] Supplier Purchase Report
+173. [TODO] Supplier Wise Item Purchase
+174. [TODO] Supplier Ledger
+175. [TODO] Item Wise Purchase Report
+
+Accounting (9):
+176. [TODO] General Ledger
+177. [TODO] Account Balance
+178. [TODO] Balance Sheet
+179. [TODO] Profit And Loss
+180. [TODO] Trial Balance
+181. [TODO] Transaction History
+182. [TODO] Daily Balance Flow Report
+183. [TODO] Monthly Balance Flow Report
+184. [TODO] Yearly Balance Flow Report
+
+HRM (3):
+185. [TODO] Employee Wise Attendance Report
+186. [TODO] Month Wise Attendance Report
+187. [TODO] Employee Leave Report
+
+Inventory (13):
+188. [TODO] Stock Ledger
+189. [TODO] Item Stock Summary
+190. [TODO] Warehouse Stock Details
+191. [TODO] Item Stock Location
+192. [TODO] Low Stock Details
+193. [TODO] Item Stock Valuation
+194. [TODO] Stock Valuation Summary
+195. [TODO] Warehouse Transaction History
+196. [TODO] Item Serial Details
+197. [TODO] Batch Wise Stock Report
+198. [TODO] Expiring Batch Report
+199. [TODO] Stock Adjustment Report
+200. [TODO] Datewise Item Purchase Sale Report
+
+
+==============================================================================
+PHASE 14 — Misc
+==============================================================================
+201. [TODO] CMS online orders  → /en/cms/orders
+202. [TODO] Ensure all DETAILS_HREF targets have matching GET /{id} APIs even
+           if Frontend page config is still thin (sales/purchase detail routes)
+
+
+==============================================================================
+START HERE (fixed recommendation)
+==============================================================================
+1. Finish Phase 0 + Phase 1 (company scope + response format)
+2. Build Phase 2 ACL next (Role/User UI already on localhost)
+3. Then Phase 3 master data + Phase 4 settings masters
+4. Only then Accounting writes → Inventory → Sales/Purchase → POS → rest
+
+Avoid starting first: Sales, POS, Payroll/Manufacturing deep flows —
+without ACL + master data + settings they become fragile.
+
+
+==============================================================================
+CURRENT BACKEND EXISTS (snapshot)
+==============================================================================
+EXISTS:
+  - Sanctum auth (register/login/verify/forgot/reset/me/logout)
+  - CompanyProvisioner (company, owner, warehouse, outlet, base COA, settings)
+  - Accounting READ APIs (dashboard, accounts, journals, expenses, incomes,
+    transfers, recurring-journals)
+  - Tables: users, roles (basic), companies, company_settings, warehouses,
+    pos_outlets, accounts, journals, expenses, incomes, money_transfers,
+    recurring_journals
+
+MISSING (high level):
+  - Company-scope middleware/trait
+  - Full ACL (permissions, company roles, invite, clone)
+  - Items / customers / suppliers / price lists / tax / discounts / …
+  - Inventory movements, sales/purchase documents, POS sessions/orders
+  - Manufacturing, HRM, Support, Reports, Settings CRUD APIs
+  - Accounting WRITE / double-entry posting
+
+
+==============================================================================
+QUICK COMMANDS
+==============================================================================
 cd Backend
 composer install
 php artisan migrate
 php artisan db:seed
 php artisan serve
 
-API base: http://localhost:8000/api
-Frontend: http://localhost:3000
+API base:  http://localhost:8000/api
+Frontend:  http://localhost:3000
+
+Update this file’s [DONE]/[PARTIAL]/[TODO] tags as each API ships.

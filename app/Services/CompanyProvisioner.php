@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\Company;
 use App\Models\CompanySetting;
+use App\Models\Permission;
 use App\Models\PosOutlet;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
@@ -55,6 +57,18 @@ class CompanyProvisioner
             $warehouse = $this->seedWarehouse($company);
             $this->seedOutlet($company, $warehouse);
             $this->seedChartOfAccounts($company);
+            $adminRole = $this->seedAclRoles($company);
+
+            $user->role_id = $adminRole->id;
+            $user->status = true;
+            $user->save();
+            $user->aclRoles()->syncWithoutDetaching([
+                $adminRole->id => [
+                    'company_id' => $company->id,
+                    'status' => 'Active',
+                    'effective_from' => now()->toDateString(),
+                ],
+            ]);
 
             // Demo accounting chart + sample transactions
             $demo = new \Database\Seeders\AccountingDemoSeeder();
@@ -149,5 +163,45 @@ class CompanyProvisioner
                 'status' => true,
             ]));
         }
+    }
+
+    public function seedAclRoles(Company $company): Role
+    {
+        $admin = Role::firstOrCreate(
+            ['company_id' => $company->id, 'slug' => 'administrator'],
+            [
+                'name' => 'Administrator',
+                'redirect_url' => '/dashboard',
+                'description' => 'Full access',
+                'is_system' => true,
+                'status' => true,
+            ]
+        );
+
+        $defaults = [
+            ['Cashier', 'cashier', '/pos/poscountercheckin'],
+            ['Manager Demo', 'manager-demo', '/dashboard'],
+            ['Store Manager', 'store-manager', '/pos/poscountercheckin'],
+        ];
+
+        foreach ($defaults as [$name, $slug, $url]) {
+            Role::firstOrCreate(
+                ['company_id' => $company->id, 'slug' => $slug],
+                [
+                    'name' => $name,
+                    'redirect_url' => $url,
+                    'description' => null,
+                    'is_system' => false,
+                    'status' => true,
+                ]
+            );
+        }
+
+        $allPermissionIds = Permission::query()->pluck('id');
+        if ($allPermissionIds->isNotEmpty()) {
+            $admin->permissions()->sync($allPermissionIds);
+        }
+
+        return $admin;
     }
 }
