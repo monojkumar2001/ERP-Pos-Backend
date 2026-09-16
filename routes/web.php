@@ -46,6 +46,7 @@ Auth::routes();
 Route::namespace('App\Http\Controllers')->group(function () {
     Route::group(['as' => 'admin.', 'prefix' => 'admin', 'namespace' => 'Admin', 'middleware' => ['auth', 'admin']], function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::patch('user/{user}/status', [UserController::class, 'updateStatus'])->name('user.status');
         Route::resource('user', UserController::class);
     });
 });

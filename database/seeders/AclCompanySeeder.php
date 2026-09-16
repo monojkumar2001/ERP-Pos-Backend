@@ -19,7 +19,12 @@ class AclCompanySeeder extends Seeder
             $admin = $provisioner->seedAclRoles($company);
 
             User::where('company_id', $company->id)->each(function (User $user) use ($company, $admin) {
-                if (!$user->role_id || !\App\Models\Role::where('id', $user->role_id)->where('company_id', $company->id)->exists()) {
+                $currentRole = \App\Models\Role::find($user->role_id);
+                $isGlobalSystemRole = $currentRole && $currentRole->company_id === null
+                    && in_array($currentRole->slug, ['super-admin', 'admin', 'user', 'block'], true);
+
+                // Never overwrite platform system roles (e.g. Super Admin) with company ACL Administrator.
+                if (!$isGlobalSystemRole && (!$user->role_id || !\App\Models\Role::where('id', $user->role_id)->where('company_id', $company->id)->exists())) {
                     $user->role_id = $admin->id;
                     $user->save();
                 }
