@@ -2,9 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
 use Closure;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RedirectIfAuthenticated
@@ -13,22 +11,34 @@ class RedirectIfAuthenticated
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @param  string|null  ...$guards
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @param  \Closure  $next
+     * @param  string|null  $guard
+     * @return mixed
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if (Auth::guard($guard)->check() && Auth::user()->role->id == 1) {
-            return redirect()->route('admin.dashboard');
-        } elseif (Auth::guard($guard)->check() && Auth::user()->role->id == 2) {
-            return redirect()->route('user.dashboard');
-        } elseif (Auth::guard($guard)->check() && Auth::user()->role->id == 3) {
-            return redirect()->route('admin.dashboard');
-        } elseif (Auth::guard($guard)->check() && Auth::user()->role->id == 4) {
-            return redirect()->route('bayer.dashboard');
-        } else {
+        if (!Auth::guard($guard)->check()) {
             return $next($request);
         }
+
+        $slug = optional(Auth::user()->role)->slug;
+
+        if (in_array($slug, ['super-admin', 'admin'], true)) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($slug === 'block') {
+            Auth::logout();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Your account has been Banned. Please contact administrator.']);
+        }
+
+        if ($slug === 'user' || $slug === 'bayer') {
+            return redirect()->route($slug === 'bayer' ? 'bayer.dashboard' : 'user.dashboard');
+        }
+
+        // Company ACL roles (administrator, cashier, …) — send to user area
+        return redirect()->route('user.dashboard');
     }
 }

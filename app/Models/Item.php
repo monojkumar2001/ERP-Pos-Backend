@@ -11,11 +11,11 @@ class Item extends Model
     protected $fillable = [
         'company_id', 'sku', 'name', 'category_id', 'brand_id', 'manufacturer_id',
         'color_id', 'size_id', 'attribute_set_id', 'price', 'cost', 'stock',
-        'opening_stock', 'uom', 'description', 'status',
+        'opening_stock', 'low_stock', 'uom', 'description', 'status',
     ];
     protected $casts = [
         'price' => 'decimal:2', 'cost' => 'decimal:2', 'stock' => 'decimal:3',
-        'opening_stock' => 'decimal:3', 'status' => 'boolean',
+        'opening_stock' => 'decimal:3', 'low_stock' => 'decimal:3', 'status' => 'boolean',
     ];
 
     public function category() { return $this->belongsTo(ItemCategory::class, 'category_id'); }

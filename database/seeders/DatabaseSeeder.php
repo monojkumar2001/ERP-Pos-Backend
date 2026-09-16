@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
         $this->call(UsersTableSeeder::class);
         $this->call(AccountingDemoSeeder::class);
         $this->call(AclCompanySeeder::class);
-        $this->call(MasterDataSeeder::class);
+        $this->call(SettingsSeeder::class);
+        $this->call(InventoryDemoSeeder::class);
+        $this->call(SalesDocumentSeeder::class);
+        $this->call(PurchaseDocumentSeeder::class);
     }
 }
