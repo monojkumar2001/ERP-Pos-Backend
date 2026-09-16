@@ -11,6 +11,7 @@ class Account extends Model
 
     protected $fillable = [
         'company_id',
+        'parent_id',
         'type',
         'group_name',
         'code',
@@ -18,6 +19,7 @@ class Account extends Model
         'description',
         'status',
         'balance',
+        'sort_order',
     ];
 
     protected $casts = [
@@ -28,5 +30,15 @@ class Account extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Account::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Account::class, 'parent_id');
     }
 }

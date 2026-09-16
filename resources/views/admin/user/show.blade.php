@@ -48,6 +48,33 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <th>Email Verified</th>
+                                        <td>
+                                            @if ($user->email_verified_at)
+                                                <span class="badge bg-success">Yes</span>
+                                                <span class="text-muted small ms-1">{{ $user->email_verified_at->format('d M Y H:i') }}</span>
+                                            @else
+                                                <span class="badge bg-secondary">No</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @if (optional(optional(auth()->user())->role)->slug === 'super-admin')
+                                        <tr>
+                                            <th>Verify Code</th>
+                                            <td>
+                                                @if ($user->verification_code)
+                                                    <code class="fw-semibold fs-6">{{ $user->verification_code }}</code>
+                                                @else
+                                                    <span class="text-muted">N/A</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Code Expires</th>
+                                            <td>{{ $user->verification_code_expires_at?->format('d M Y H:i') ?? 'N/A' }}</td>
+                                        </tr>
+                                    @endif
+                                    <tr>
                                         <th>Country</th>
                                         <td>{{ $user->country ?? 'N/A' }}</td>
                                     </tr>

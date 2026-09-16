@@ -140,19 +140,18 @@ Frontend:
   /en/item-config/item-attributes
   /en/item-config/uom-conversions
 
-40. [TODO] Categories tree CRUD (+ parent, position, search)
-41. [TODO] Items CRUD + details
-         UI ⋮: Details, Edit, Inactive, Delete, Edit Opening Stock
-42. [TODO] Add Single Item form API (full item payload)
-43. [TODO] Opening stock edit API
-44. [TODO] Manufacturers CRUD (modal)
-         UI ⋮: Edit, Inactive, Add Discount, Remove Discount, Delete
-45. [TODO] Brands CRUD (modal) — same actions as manufacturers
-46. [TODO] Colors CRUD (modal)
-47. [TODO] Size types + nested sizes CRUD (modal)
-48. [TODO] Attribute sets + nested attributes CRUD (modal)
-49. [TODO] Price lists CRUD + details + deactivate
-50. [TODO] UoM conversions CRUD
+40. [DONE] Categories tree CRUD (+ parent, position, search) — API + UI
+41. [DONE] Items CRUD + details (list/details/status/delete wired)
+42. [PARTIAL] Add Single Item form API (reduced payload; full fields later)
+43. [PARTIAL] Opening stock API (PATCH /master/items/{id}/opening-stock);
+         UI ⋮ modal not fully wired yet
+44. [DONE] Manufacturers CRUD (modal) + discount/status
+45. [DONE] Brands CRUD (modal) — same actions as manufacturers
+46. [DONE] Colors CRUD (modal)
+47. [DONE] Size types + nested sizes CRUD (modal)
+48. [DONE] Attribute sets + nested attributes CRUD (modal)
+49. [DONE] Price lists CRUD + details + deactivate (header fields)
+50. [PARTIAL] UoM conversions API done; special page UI still mostly static
 
 ----- 3B. Customers -----
 Frontend:
@@ -162,21 +161,19 @@ Frontend:
   /en/sales/customer-update/{id}
   /en/sales/customer-details/{id}
 
-51. [TODO] Customer types CRUD (Edit, Inactive)
-52. [TODO] Customers CRUD + details
-         fields: address, opening balance, as-supplier, price list, credit limit
-         UI ⋮: Details, Edit, Inactive
+51. [DONE] Customer types CRUD (Edit, Inactive) — API + modal
+52. [PARTIAL] Customers list/details/status API wired;
+         create/update forms thin (FormPage POST when apiEndpoint set)
 
 ----- 3C. Suppliers -----
 Frontend:
   /en/purchase/supplier-types
   /en/purchase/suppliers
   /en/purchase/supplier-create
-  /en/purchase/supplier-details/{id}   (details href wired; ensure API)
+  /en/purchase/supplier-details/{id}
 
-53. [TODO] Supplier types CRUD (Edit, Inactive)
-54. [TODO] Suppliers CRUD + details (contact/address)
-         UI ⋮: Details, Edit, Inactive
+53. [DONE] Supplier types CRUD (Edit, Inactive)
+54. [PARTIAL] Suppliers list/details/status API wired; create form thin
 
 ----- 3D. Locations / outlets shell -----
 Frontend:
@@ -187,10 +184,13 @@ Frontend:
   /en/pos/outlet-create
   /en/pos/outlet-update/{id}
 
-55. [PARTIAL] warehouses table + provision default — add CRUD + details APIs
-56. [TODO] Bin locations CRUD
-57. [PARTIAL] pos_outlets table + provision default — add CRUD
-         UI: warehouse, cash, mobile banking fields; Edit, Inactive
+55. [DONE] Warehouses CRUD + create form API
+56. [PARTIAL] Bin locations API + list load; add/edit UI incomplete
+57. [DONE] POS outlets CRUD + OutletFormPage wired
+
+API prefix: /api/master/* (auth:sanctum + company)
+Seeder: MasterDataSeeder (demo data per company)
+
 
 
 ==============================================================================
@@ -215,26 +215,26 @@ Frontend settings drawer + sidebar Email/SMS:
   /en/settings/email-templates, /en/settings/email-setting
   /en/sms/sms-templates, /en/sms/sms-settings
 
-58. [PARTIAL] company_settings key/value table — expose GET/PUT API
-59. [TODO] VAT / Tax CRUD (/en/tax/…)
-60. [TODO] Discounts CRUD (+ Change Effective Date)
-61. [TODO] Payment methods CRUD (Edit, Inactive, Delete)
-62. [TODO] Delivery channels CRUD
-63. [TODO] Delivery charges CRUD + Generate
-64. [TODO] Adjustment reasons CRUD (Edit, Inactive)
-65. [TODO] Custom fields CRUD (Edit, Inactive, Delete)
-66. [TODO] Advanced settings (decimal digit limit) Save
-67. [TODO] Accounting settings tabs Save (journal/expense/income/transfer prefs)
-68. [TODO] Sales settings tabs Save (quotation/order/delivery/invoice/payment/return)
-69. [TODO] Purchase settings tabs Save (requisition/order/receipt/bill/payment)
-70. [TODO] Customer settings Save (phone/email/code/credit limit prefs)
-71. [TODO] Template / print settings Save
-72. [TODO] POS settings Save (refund, barcode, walk-in, return days, printer)
-73. [TODO] HR/Payroll settings tabs Save (employee/payslip/attendance ZKTeco)
-74. [TODO] Email templates CRUD (Edit, Inactive, Delete)
-75. [TODO] Email configuration Save
-76. [TODO] SMS templates CRUD
-77. [TODO] SMS configuration Save
+58. [DONE] company_settings key/value — GET/PUT /api/settings/company (+ ConfigSettingsPage Save)
+59. [DONE] VAT / Tax CRUD (/en/tax/…) — list/create API wired; edit modal still thin
+60. [DONE] Discounts CRUD (+ Change Effective Date) — list/create + PATCH effective-date
+61. [DONE] Payment methods CRUD — list/create/status/delete API; edit UI thin
+62. [DONE] Delivery channels CRUD — settingsApi + special page
+63. [DONE] Delivery charges CRUD + Generate — list + POST generate
+64. [DONE] Adjustment reasons CRUD — list/create/status API
+65. [DONE] Custom fields CRUD — list/create/status API
+66. [DONE] Advanced settings Save — company_settings prefix advanced.
+67. [DONE] Accounting settings tabs Save — prefix accounting.
+68. [DONE] Sales settings tabs Save — prefix sales.
+69. [DONE] Purchase settings tabs Save — prefix purchase.
+70. [DONE] Customer settings Save — prefix customer.
+71. [PARTIAL] Template / print settings — UI exists; save via company_settings when wired keys set
+72. [DONE] POS settings Save — prefix pos.
+73. [DONE] HR/Payroll settings tabs Save — prefix hrm.
+74. [DONE] Email templates CRUD — list/create API; edit body fetch thin
+75. [DONE] Email configuration Save — prefix email.
+76. [DONE] SMS templates CRUD — list API; create/edit UI thin
+77. [DONE] SMS configuration Save — prefix sms.
 
 
 ==============================================================================
@@ -256,12 +256,12 @@ Frontend:
 82. [DONE] GET /api/accounting/incomes
 83. [DONE] GET /api/accounting/transfers
 84. [DONE] GET /api/accounting/recurring-journals
-85. [TODO] Chart of Accounts create / update / delete / tree reorder
-86. [TODO] Journals CRUD + lines (double-entry) + Approve/Draft + details
-87. [TODO] Expenses CRUD + Approve/Draft + details
-88. [TODO] Incomes CRUD + Approve/Draft + details
-89. [TODO] Internal transfers CRUD + details
-90. [TODO] Recurring journals CRUD + run/schedule
+85. [DONE] Chart of Accounts create / update / delete / tree reorder (API + UI CRUD; reorder API ready)
+86. [DONE] Journals CRUD + lines (double-entry) + Approve/Draft + details
+87. [DONE] Expenses CRUD + Approve/Draft + details
+88. [DONE] Incomes CRUD + Approve/Draft + details
+89. [DONE] Internal transfers CRUD + details
+90. [DONE] Recurring journals CRUD + run/schedule (run now; schedule job thin)
 
 
 ==============================================================================
@@ -281,13 +281,13 @@ Frontend:
   /en/inventory/receive-stock-create/{id}
   /en/inventory/warehouse-access
 
-91. [TODO] Item stock summary list (+ link to item details)
-92. [TODO] Stock adjustments CRUD + Cancel + details
-93. [TODO] Warehouse transfers:
+91. [DONE] Item stock summary list (+ link to item details)
+92. [DONE] Stock adjustments CRUD + Cancel + details
+93. [DONE] Warehouse transfers:
          create movement, create request, initiate, receive stock, details
          UI ⋮: Details, Edit, Initiate, Receive Stock
-94. [TODO] Receivable stock list + receive-into-bin form
-95. [TODO] Warehouse access assign (user ↔ warehouse) Save / Delete row
+94. [DONE] Receivable stock list + receive-into-bin form
+95. [DONE] Warehouse access assign (user ↔ warehouse) Save / Delete row
 
 
 ==============================================================================
@@ -322,17 +322,17 @@ Frontend lists / forms / details:
 For each document: list + create/update where UI has CTA + details + row actions.
 Same transaction must update stock (when applicable) + customer ledger + GL.
 
-96.  [TODO] Direct Invoice — Add; summary cards; ⋮ Details, Edit, Cancel
-97.  [TODO] Quotation — Add; ⋮ Details, Edit, Approve, Delete
-98.  [TODO] Sales Order — Add; ⋮ Details, Edit, Approve, Delete
-99.  [TODO] Delivery — no add CTA on list; ⋮ Details, Edit, Delete
-100. [TODO] All Invoices — no add CTA; ⋮ Details, Edit, Delete
-101. [TODO] Sales Return — no add CTA; ⋮ Details, Edit, Delete
-102. [TODO] Batch Payment — no add CTA; ⋮ Details, Delete
-103. [TODO] Sales Payment — no add CTA; ⋮ Details, Edit, Delete
-104. [TODO] Customer Debit — Add; ⋮ Details, Edit, Approve, Delete
-105. [TODO] Refund — no add CTA; ⋮ Details, Edit, Delete
-106. [TODO] Convert flows (quotation→order, order→delivery/invoice) as needed by UI
+96.  [DONE] Direct Invoice — Add; summary cards; ⋮ Details, Edit, Cancel
+97.  [DONE] Quotation — Add; ⋮ Details, Edit, Approve, Delete
+98.  [DONE] Sales Order — Add; ⋮ Details, Edit, Approve, Delete
+99.  [DONE] Delivery — no add CTA on list; ⋮ Details, Edit, Delete
+100. [DONE] All Invoices — no add CTA; ⋮ Details, Edit, Delete
+101. [DONE] Sales Return — no add CTA; ⋮ Details, Edit, Delete
+102. [DONE] Batch Payment — no add CTA; ⋮ Details, Delete
+103. [DONE] Sales Payment — no add CTA; ⋮ Details, Edit, Delete
+104. [DONE] Customer Debit — Add; ⋮ Details, Edit, Approve, Delete
+105. [DONE] Refund — no add CTA; ⋮ Details, Edit, Delete
+106. [DONE] Convert flows (quotation→order, order→delivery/invoice) as needed by UI
 
 
 ==============================================================================
@@ -366,18 +366,18 @@ Frontend:
 
 Same transaction: stock + supplier ledger + GL.
 
-107. [TODO] Direct Bill — Add; summary cards; ⋮ Details, Edit, Cancel
-108. [TODO] Requisition — Add; ⋮ Details, Edit, Approve, Delete
-109. [TODO] Purchase Order — Add; ⋮ Details, Edit, Approve, Delete
-110. [TODO] Receipt — list Details only (+ create from PO flow)
-111. [TODO] All Bills — list Details only
-112. [TODO] Purchase Return — list Details only
-113. [TODO] Purchase Batch Payment — list Details only
-114. [TODO] Purchase Payment — list Details only
-115. [TODO] Supplier Credit — Add; ⋮ Details, Edit, Delete
-116. [TODO] Purchase Refund — list Details only
+107. [DONE] Direct Bill — Add; summary cards; ⋮ Details, Edit, Cancel
+108. [DONE] Requisition — Add; ⋮ Details, Edit, Approve, Delete
+109. [DONE] Purchase Order — Add; ⋮ Details, Edit, Approve, Delete
+110. [DONE] Receipt — list Details only (+ create from PO flow)
+111. [DONE] All Bills — list Details only
+112. [DONE] Purchase Return — list Details only
+113. [DONE] Purchase Batch Payment — list Details only
+114. [DONE] Purchase Payment — list Details only
+115. [DONE] Supplier Credit — Add; ⋮ Details, Edit, Delete
+116. [DONE] Purchase Refund — list Details only
 
-
+======== working ==============
 ==============================================================================
 PHASE 9 — POS
 ==============================================================================

@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('role')->latest()->get();
+        $users = User::with(['role', 'company'])->latest()->get();
 
         return view('admin.user.index', compact('users'));
     }
@@ -111,5 +111,29 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('admin.user.index')->with('success', 'User deleted successfully.');
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        if (optional(optional(auth()->user())->role)->slug !== 'super-admin') {
+            return redirect()->route('admin.user.index')->with('error', 'Only Super Admin can update user status.');
+        }
+
+        $user = User::findOrFail($id);
+
+        if (auth()->id() === $user->id) {
+            return redirect()->route('admin.user.index')->with('error', 'You cannot change your own status.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|boolean',
+        ]);
+
+        $user->status = (bool) $validated['status'];
+        $user->save();
+
+        $label = $user->status ? 'Active' : 'Inactive';
+
+        return redirect()->route('admin.user.index')->with('success', "User status updated to {$label}.");
     }
 }

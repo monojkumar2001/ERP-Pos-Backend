@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CompanySetting extends Model
 {
-    use HasFactory;
+    use HasFactory, HasCompanyScope;
 
     protected $fillable = ['company_id', 'key', 'value'];
 

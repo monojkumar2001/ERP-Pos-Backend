@@ -17,11 +17,12 @@ class AdminMiddleware
     public function handle($request, Closure $next)
     {
         $user = Auth::user();
+        $slug = optional(optional($user)->role)->slug;
 
-        if ($user && $user->role && ($user->role->id == 1 || $user->role->id == 3)) {
+        if ($user && in_array($slug, ['super-admin', 'admin'], true)) {
             return $next($request);
-        } else {
-            return redirect()->route('login');
         }
+
+        return redirect()->route('login');
     }
 }

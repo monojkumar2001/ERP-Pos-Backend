@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasCompanyScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class SmsTemplate extends Model
+{
+    use HasFactory, HasCompanyScope;
+
+    protected $fillable = [
+        'company_id',
+        'type',
+        'name',
+        'body',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => 'boolean',
+    ];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+}

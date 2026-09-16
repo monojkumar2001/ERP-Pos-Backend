@@ -2,10 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Facades\Auth;
-
 use Closure;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserMiddleware
 {
@@ -18,14 +16,26 @@ class UserMiddleware
      */
     public function handle($request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role->id == 2) {
-            return $next($request);
-        } elseif (Auth::check() && Auth::user()->role->id == 5) {
-            Auth::logout();
-            return redirect()->route('login')
-                ->withErrors(['email' => 'Your account has been Banned. Please contact administrator.']);
-        } else {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
+
+        $user = Auth::user();
+        $slug = optional($user->role)->slug;
+
+        // Banned only by Block role slug or inactive status — never by raw role id
+        // (ACL company "Administrator" roles can share numeric ids that used to collide).
+        if ($slug === 'block' || $user->status === false || $user->status === 0) {
+            Auth::logout();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Your account has been Banned. Please contact administrator.']);
+        }
+
+        if (in_array($slug, ['super-admin', 'admin'], true)) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return $next($request);
     }
 }
