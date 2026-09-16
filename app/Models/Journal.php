@@ -28,4 +28,9 @@ class Journal extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function lines()
+    {
+        return $this->hasMany(JournalLine::class)->orderBy('sort_order');
+    }
 }

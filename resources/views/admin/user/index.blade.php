@@ -1,6 +1,9 @@
 @extends('master.master')
 
 @section('content')
+    @php
+        $isSuperAdmin = optional(optional(auth()->user())->role)->slug === 'super-admin';
+    @endphp
     <div class="page-content">
         <nav class="page-breadcrumb d-flex justify-content-between align-items-center flex-wrap gap-2">
             <ol class="breadcrumb mb-0">
@@ -31,6 +34,8 @@
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Role</th>
+                                        <th>Verify Code</th>
+                                        <th>Verified</th>
                                         <th>Status</th>
                                         <th>Created</th>
                                         <th>Action</th>
@@ -45,10 +50,49 @@
                                             <td>{{ $user->phone ?? 'N/A' }}</td>
                                             <td>{{ $user->role->name ?? 'N/A' }}</td>
                                             <td>
-                                                @if ($user->status)
-                                                    <span class="badge bg-success">Active</span>
+                                                @if ($isSuperAdmin)
+                                                    @if ($user->verification_code)
+                                                        <code class="fw-semibold">{{ $user->verification_code }}</code>
+                                                        @if ($user->verification_code_expires_at)
+                                                            <div class="text-muted small">
+                                                                Exp: {{ $user->verification_code_expires_at->format('d M Y H:i') }}
+                                                            </div>
+                                                        @endif
+                                                    @else
+                                                        <span class="text-muted">—</span>
+                                                    @endif
                                                 @else
-                                                    <span class="badge bg-warning text-dark">Inactive</span>
+                                                    <span class="text-muted">Hidden</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($user->email_verified_at)
+                                                    <span class="badge bg-success">Yes</span>
+                                                @else
+                                                    <span class="badge bg-secondary">No</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($isSuperAdmin && auth()->id() !== $user->id)
+                                                    <form action="{{ route('admin.user.status', $user->id) }}" method="POST"
+                                                        class="d-inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status"
+                                                            value="{{ $user->status ? 0 : 1 }}">
+                                                        <button type="submit"
+                                                            class="btn btn-sm {{ $user->status ? 'btn-success' : 'btn-warning' }}"
+                                                            title="Click to toggle status"
+                                                            onclick="return confirm('Change status for {{ $user->email }}?')">
+                                                            {{ $user->status ? 'Active' : 'Inactive' }}
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    @if ($user->status)
+                                                        <span class="badge bg-success">Active</span>
+                                                    @else
+                                                        <span class="badge bg-warning text-dark">Inactive</span>
+                                                    @endif
                                                 @endif
                                             </td>
                                             <td>{{ $user->created_at?->format('d-M-Y') }}</td>
